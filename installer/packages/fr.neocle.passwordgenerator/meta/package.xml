@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>PasswordGenerator 1.0</DisplayName>
+    <Description>Installs the main app</Description>
+    <Version>1.0.0</Version>
+    <ReleaseDate>2025-04-09</ReleaseDate>
+    <Default>true</Default>
+    <Script>installscript.qs</Script>
+    <WizardStyle>Classic</WizardStyle>
+    <StyleSheet>stylesheet.qss</StyleSheet>
+</Package>

@@ -1,0 +1,108 @@
+/* General */
+* {
+    font-family: "Segoe UI", "Open Sans", sans-serif;
+    font-size: 10pt;
+    color: #2E2E2E;
+}
+
+/* Main window */
+QWidget {
+    background-color: #F9F9F9;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #0078D7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+}
+
+QPushButton:hover {
+    background-color: #005A9E;
+}
+
+QPushButton:pressed {
+    background-color: #004578;
+}
+
+QPushButton:disabled {
+    background-color: #CCCCCC;
+    color: #888888;
+}
+
+/* Labels */
+QLabel {
+    color: #2E2E2E;
+}
+
+/* Line Edits */
+QLineEdit, QPlainTextEdit, QTextEdit {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    padding: 4px;
+}
+
+QLineEdit:focus, QPlainTextEdit:focus, QTextEdit:focus {
+    border: 1px solid #0078D7;
+}
+
+/* Checkboxes & Radio Buttons */
+QCheckBox, QRadioButton {
+    spacing: 5px;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: #0078D7;
+    border: 1px solid #005A9E;
+}
+
+/* ComboBox */
+QComboBox {
+    padding: 4px;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    background-color: #FFFFFF;
+}
+
+QComboBox:focus {
+    border: 1px solid #0078D7;
+}
+
+/* ProgressBar */
+QProgressBar {
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    text-align: center;
+    background: #E0E0E0;
+}
+
+QProgressBar::chunk {
+    background-color: #0078D7;
+    width: 10px;
+    margin: 1px;
+}
+
+/* TreeView/ListView */
+QTreeView, QListView {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+}
+
+/* Wizard pages */
+QWizardPage {
+    background-color: #F9F9F9;
+}
+
+/* Highlight selected list items */
+QListView::item:selected, QTreeView::item:selected {
+    background-color: #D0E7FF;
+    color: #000;
+}
