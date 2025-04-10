@@ -6,6 +6,4 @@
     <ReleaseDate>2025-04-09</ReleaseDate>
     <Default>true</Default>
     <Script>installscript.qs</Script>
-    <WizardStyle>Classic</WizardStyle>
-    <StyleSheet>stylesheet.qss</StyleSheet>
 </Package>

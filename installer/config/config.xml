@@ -5,5 +5,7 @@
     <Title>Password Generator Installer</Title>
     <Publisher>Neocle</Publisher>
     <StartMenuDir>PasswordGenerator</StartMenuDir>
-    <TargetDir>@HomeDir@/InstallationDirectory</TargetDir>
+    <TargetDir>@HomeDir@/PasswordGenerator</TargetDir>
+    <WizardStyle>Classic</WizardStyle>
+    <StyleSheet>stylesheet.qss</StyleSheet>
 </Installer>
