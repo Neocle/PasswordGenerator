@@ -146,7 +146,7 @@ void PasswordGenerator::generatePasswordSafely()
                     remainingLength -= chunkSize;
 
                     if (timer.elapsed() > timeout) {
-                        throw std::runtime_error("Password generation timed out. Try with fewer constraints or a shorter length.");
+                        throw std::runtime_error("Génération du mot de passe trop lente, c'est la cata..");
                     }
                 }
             }
@@ -163,7 +163,7 @@ void PasswordGenerator::generatePasswordSafely()
                 );
 
                 if (timer.elapsed() > timeout) {
-                    throw std::runtime_error("Password generation timed out. Try with fewer constraints or a shorter length.");
+                    throw std::runtime_error("Génération du mot de passe trop lente, c'est la cata..");
                 }
             }
 
@@ -212,8 +212,8 @@ void PasswordGenerator::handlePasswordError(const QString& errorMsg)
 {
     ui.result->setText(tr("Error: %1").arg(errorMsg));
 
-    QMessageBox::warning(this, tr("Password Generation Error"),
-        tr("Could not generate password with current settings.\n\n%1").arg(errorMsg));
+    QMessageBox::warning(this, tr("Erreur de génération du mdp"),
+        tr("Impossible de généerer le mdp avec les paramètres actuels.\n\n%1").arg(errorMsg));
 
     updatePasswordStrengthBar(0);
 }
@@ -257,41 +257,37 @@ void PasswordGenerator::resetSettings()
 
 void PasswordGenerator::updatePasswordStrengthBar(int strengthLevel) {
     QStringList colors = {
-        "#ff0000", 
-        "#ff4500", 
-        "#ff8c00", 
-        "#ffd700", 
+        "#ff0000",
+        "#ff4500",
+        "#ff8c00",
+        "#ffd700",
         "#adff2f",
-        "#32cd32", 
-        "#008000", 
-        "#006400", 
+        "#32cd32",
+        "#008000",
+        "#006400",
         "#004d00"
     };
 
     QStringList levelNames = {
-        "Might as well use 'password'",
-        "My grandma could crack this",
-        "Meh, better than nothing",
-        "Getting there...",
-        "Decent enough",
-        "Now we're talking!",
-        "Impressive security",
-        "Fort Knox approves",
-        "Even the NSA is sweating"
+        "Trop faible - change stp",
+        "Faible - trop simple à deviner",
+        "Moyen - ameliorable",
+        "Correct - pas mal du tout",
+        "Bon - tient bien la route",
+        "Solide - difficile à casser",
+        "Tres solide - tu es un pro",
+        "Excellent - quasi impenetrable",
+        "Exceptionnel - meme les hackers pleurent"
     };
 
-    int expandedLevel = strengthLevel * 2;
-    if (strengthLevel > 0 && expandedLevel < 8) {
-        if (QRandomGenerator::global()->bounded(2) == 1) {
-            expandedLevel += 1;
-        }
-    }
+    int expandedLevel = strengthLevel;
     expandedLevel = std::max(0, std::min(expandedLevel, 8));
 
     int value = (expandedLevel + 1) * 100 / 9;
     ui.robustness->setValue(value);
 
     QString color = colors[expandedLevel];
+
     QString style = QString(R"(
         QProgressBar {
             border: none;
@@ -305,7 +301,6 @@ void PasswordGenerator::updatePasswordStrengthBar(int strengthLevel) {
         QProgressBar::chunk {
             border-radius: 8px;
             background-color: %1;
-            /* Add gradient effect */
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2);
         }
     )").arg(color).arg(expandedLevel < 8 ? colors[expandedLevel + 1] : color);
@@ -325,16 +320,15 @@ void PasswordGenerator::updatePasswordStrengthBar(int strengthLevel) {
 }
 
 int PasswordGenerator::evaluatePasswordStrength(const std::string& password) {
-    if (password.empty() || password.substr(0, 5) == "Error") {
+    if (password.empty() || password.substr(0, 5) == "Erreur") {
         return 0;
     }
 
     int score = 0;
 
-    if (password.length() >= 8) score += 2;
-    if (password.length() >= 10) score += 1;
-    if (password.length() >= 12) score += 2;
-    if (password.length() >= 16) score += 2;
+    if (password.length() >= 8) score += 1;
+    if (password.length() >= 12) score += 1;
+    if (password.length() >= 16) score += 1;
     if (password.length() >= 20) score += 1;
 
     bool hasDigit = false;
@@ -358,42 +352,64 @@ int PasswordGenerator::evaluatePasswordStrength(const std::string& password) {
     if (hasDigit) score += 1;
     if (hasLower) score += 1;
     if (hasUpper) score += 1;
-    if (hasSpecial) score += 2;
-    if (uniqueChars >= 8) score += 1;
-    if (uniqueChars >= 12) score += 1;
-    if (uniqueChars >= 16) score += 1;
+    if (hasSpecial) score += 1;
+
+    if (password.length() > 0 && uniqueChars >= password.length() * 0.7) score += 1;
 
     int penalties = 0;
 
     bool hasSequential = false;
-    for (size_t i = 0; i < password.length() - 2; i++) {
-        if ((password[i + 1] == password[i] + 1) && (password[i + 2] == password[i] + 2)) {
-            hasSequential = true;
-            break;
+    if (password.length() >= 3) {
+        for (size_t i = 0; i < password.length() - 2; i++) {
+            if ((password[i + 1] == password[i] + 1) && (password[i + 2] == password[i] + 2)) {
+                hasSequential = true;
+                break;
+            }
+            if ((password[i + 1] == password[i] - 1) && (password[i + 2] == password[i] - 2)) {
+                hasSequential = true;
+                break;
+            }
         }
+        if (hasSequential) penalties += 1;
     }
-    if (hasSequential) penalties += 1;
 
     bool hasRepeated = false;
-    for (size_t i = 0; i < password.length() - 2; i++) {
-        if (password[i] == password[i + 1] && password[i] == password[i + 2]) {
-            hasRepeated = true;
+    if (password.length() >= 3) {
+        for (size_t i = 0; i < password.length() - 2; i++) {
+            if (password[i] == password[i + 1] && password[i] == password[i + 2]) {
+                hasRepeated = true;
+                break;
+            }
+        }
+        if (hasRepeated) penalties += 1;
+    }
+
+    std::vector<std::string> commonPatterns = {
+        "qwerty", "azerty", "password", "123456", "abcdef", "qwertz", "asdfgh"
+    };
+
+    std::string lowerPassword;
+    std::transform(password.begin(), password.end(), std::back_inserter(lowerPassword),
+        [](unsigned char c) { return std::tolower(c); });
+
+    for (const auto& pattern : commonPatterns) {
+        if (lowerPassword.find(pattern) != std::string::npos) {
+            penalties += 2;
             break;
         }
     }
-    if (hasRepeated) penalties += 1;
 
     score = std::max(0, score - penalties);
 
-    return std::min(static_cast<int>(score / 5), 4);
+    return std::min(score, 8);
 }
 
 PasswordDetails PasswordGenerator::evaluatePasswordDetails() {
     PasswordDetails details;
     QString password = ui.result->text();
 
-    if (password.isEmpty() || password.startsWith("Error:") ||
-        password == "Generating password...") {
+    if (password.isEmpty() || password.startsWith("Erreur:") ||
+        password == "Generation du mot de passe...") {
         return details;
     }
 
@@ -412,17 +428,25 @@ PasswordDetails PasswordGenerator::evaluatePasswordDetails() {
 
     details.uniqueChars = static_cast<int>(charSet.size());
 
-    for (size_t i = 0; i < stdPassword.length() - 2; i++) {
-        if ((stdPassword[i + 1] == stdPassword[i] + 1) && (stdPassword[i + 2] == stdPassword[i] + 2)) {
-            details.hasSequentialChars = true;
-            break;
+    if (stdPassword.length() >= 3) {
+        for (size_t i = 0; i < stdPassword.length() - 2; i++) {
+            if ((stdPassword[i + 1] == stdPassword[i] + 1) && (stdPassword[i + 2] == stdPassword[i] + 2)) {
+                details.hasSequentialChars = true;
+                break;
+            }
+            if ((stdPassword[i + 1] == stdPassword[i] - 1) && (stdPassword[i + 2] == stdPassword[i] - 2)) {
+                details.hasSequentialChars = true;
+                break;
+            }
         }
     }
 
-    for (size_t i = 0; i < stdPassword.length() - 2; i++) {
-        if (stdPassword[i] == stdPassword[i + 1] && stdPassword[i] == stdPassword[i + 2]) {
-            details.hasRepeatedChars = true;
-            break;
+    if (stdPassword.length() >= 3) {
+        for (size_t i = 0; i < stdPassword.length() - 2; i++) {
+            if (stdPassword[i] == stdPassword[i + 1] && stdPassword[i] == stdPassword[i + 2]) {
+                details.hasRepeatedChars = true;
+                break;
+            }
         }
     }
 
@@ -433,29 +457,29 @@ QString PasswordGenerator::getPasswordImprovementTips(const PasswordDetails& det
     QString tips;
 
     if (!details.hasDigits) {
-        tips += "- Add some numbers\n";
+        tips += "- Ajoutez des chiffres\n";
     }
     if (!details.hasUppercase) {
-        tips += "- Add uppercase letters\n";
+        tips += "- Ajoutez des majuscules\n";
     }
     if (!details.hasSpecialChars) {
-        tips += "- Add special characters (!@#$%^&*)\n";
+        tips += "- Ajoutez des caractères spéciaux (!@#$%^&*)\n";
     }
     if (details.length < 12) {
-        tips += "- Make it longer (aim for 12+ characters)\n";
+        tips += "- Allongez-le (au moins 12 caractères)\n";
     }
     if (details.hasSequentialChars) {
-        tips += "- Avoid sequential characters (abc, 123)\n";
+        tips += "- Évitez les séquences de caractères (abc, 123)\n";
     }
     if (details.hasRepeatedChars) {
-        tips += "- Avoid repeated characters (aaa, 111)\n";
+        tips += "- Évitez les répétitions de caractères (aaa, 111)\n";
     }
 
     if (tips.isEmpty()) {
-        return "Great password! No improvements needed.";
+        return "Pas mal le mot de passe, rien à changer!";
     }
     else {
-        return "Tips to improve your password:\n" + tips;
+        return "Conseils pour améliorer votre mdp:\n" + tips;
     }
 }
 
@@ -463,8 +487,8 @@ void PasswordGenerator::copyPassword()
 {
     QString password = ui.result->text();
 
-    if (password.isEmpty() || password.startsWith("Error:") ||
-        password == "Generating password...") {
+    if (password.isEmpty() || password.startsWith("Erreur:") ||
+        password == "Génération du mot de passe...") {
         return;
     }
 
